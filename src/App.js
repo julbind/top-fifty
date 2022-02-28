@@ -1,3 +1,4 @@
+import React from 'react'
 import './App.css'
 import axios from 'axios'
 import { useState } from 'react'
@@ -110,27 +111,34 @@ function App() {
     }
   }
 
+  let artistDisplay = null
   if (_.isEmpty(artists)) {
     getSortedArtists().then(artists => setArtists(artists))
+  } else {
+    artistDisplay =
+    <React.Fragment>
+      <div className="artist-display" data-testid="artist-track-display">
+        {artists.map(artist => (
+          getArtistTrackDisplay(artist)
+        ))}
+      </div>
+      <div className="artist-display" data-testid="artist-playcount-display">
+        {getArtistsWithDivisiblePlaycounts(
+          getTopPortionOfArtists(artists, 2), 9).map(artist => (
+          getArtistPlaycountDisplay(artist)
+        ))}
+      </div>
+    </React.Fragment>
   }
+
 
   return (
     <div className="App">
       <header className="App-header">
-        <div style={{ margin: '20px' }}>
-          {artists.map(artist => (
-            getArtistTrackDisplay(artist)
-          ))}
-        </div>
-        <div>
-          {getArtistsWithDivisiblePlaycounts(
-            getTopPortionOfArtists(artists, 2), 9).map(artist => (
-            getArtistPlaycountDisplay(artist)
-          ))}
-        </div>
+        { artistDisplay }
       </header>
     </div>
   );
 }
 
-export default App;
+export default App
