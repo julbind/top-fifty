@@ -6,6 +6,7 @@ import _ from 'lodash'
 
 function App() {
   const [artists, setArtists] = useState([])
+
   const getTopFiftyTracks = () => {
     return axios.get('https://ws.audioscrobbler.com/2.0/', {
       params: {
@@ -22,23 +23,22 @@ function App() {
     })
   }
 
+  //construct a map where key is unique artist identifier and value is object
+  //containing artist name and array of track objects.
   const mapTracksByArtist = () => {
-
-    //helper func for constructing artistMap
+    //helper func for constructing track objects
     const getTrackObject = (track) => {
       return {
         name: track.name,
         playcount: track.playcount
       }
     }
-
     const artistMap = {}
     return getTopFiftyTracks().then(data => {
       data.tracks.track.forEach(track => {
         //would have preferred to use mbid, but some artists didn't have mbid
         const artistId = track.artist.url
         const artistEntry = artistMap[artistId]
-
         if (artistEntry) {
           artistEntry.tracks.push(getTrackObject(track))
         } else {
@@ -52,10 +52,10 @@ function App() {
     })
   }
 
+  //sort by number of tracks desc, then artist name asc
   const getSortedArtists = () => {
     return mapTracksByArtist().then(artistMap => {
       if (!_.isEmpty(artistMap)) {
-        //sort by number of tracks desc, then artist name asc
         return _.orderBy(Object.values(artistMap), [
           artist => artist.tracks.length,
           artist => artist.name],
@@ -66,14 +66,15 @@ function App() {
     })
   }
 
+  //return top portion (as defined by denom) of artists, rounding up
   const getTopPortionOfArtists = (artistList, denom) => {
     if (!_.isEmpty(artists)) {
-      //return top portion (as defined by denom) of artists, rounding up
       return artists.slice(0, Math.ceil(artists.length/denom))
     }
     return []
   }
 
+  //return artists with total playcount divisible by denom
   const getArtistsWithDivisiblePlaycounts = (artistList, denom) => {
     const newArtistList = []
     artistList.forEach(artist => {
@@ -111,6 +112,7 @@ function App() {
     }
   }
 
+  //if no artists yet, get the artists, else display the artists
   let artistDisplay = null
   if (_.isEmpty(artists)) {
     getSortedArtists().then(artists => setArtists(artists))
